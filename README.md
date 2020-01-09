@@ -25,7 +25,7 @@ Supported Golang version: See .travis.yml
 
 Due to the [go-sqlite3](https://github.com/mattn/go-sqlite3) project change its way to load the `PRAGMA` variables. Setting the encrypting key won't work for the existing database anymore. But you can load the encrypt key by setting with query parameter `_key`, like:
 ```golang
-b, err = sql.Open("sqlite3", databasefile +"?_key=password")
+b, err = sql.Open("sqlite3", databasefile +"?_key=password&_cipher_migrate=1")
 ```
 
 To upgrade SQLCipher from 3.x to 4.x, please take a look of:
