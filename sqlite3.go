@@ -1000,6 +1000,7 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 
 	// PRAGMA's
 	encryptKey := ""
+	cipherMigrate := 0
 	autoVacuum := -1
 	busyTimeout := 5000
 	caseSensitiveLike := -1
@@ -1024,6 +1025,11 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 		// _key
 		if val := params.Get("_key"); val != "" {
 			encryptKey = val
+		}
+
+		// _cipher_migrate
+		if val := params.Get("_cipher_migrate"); val != "0" {
+			cipherMigrate = 1
 		}
 
 		// Authentication
@@ -1382,6 +1388,14 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 	// The key pragma should be always called first
 	if encryptKey != "" {
 		if err := exec(fmt.Sprintf("PRAGMA key = %s;", encryptKey)); err != nil {
+			C.sqlite3_close_v2(db)
+			return nil, err
+		}
+	}
+
+	// cipher_migrate will update db
+	if cipherMigrate == 1 {
+		if err := exec("PRAGMA cipher_migrate;"); err != nil {
 			C.sqlite3_close_v2(db)
 			return nil, err
 		}
